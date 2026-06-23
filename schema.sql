@@ -75,17 +75,17 @@ CREATE TABLE PuntiRitiro (
     piano VARCHAR(50),
     aula VARCHAR(50),
     note TEXT,
-    idSedeSede INT NOT NULL REFERENCES Sedi(idSede) ON DELETE CASCADE
+    idSede INT NOT NULL REFERENCES Sedi(idSede) ON DELETE CASCADE
 );
 
 CREATE TABLE SlotRitiro (
     idSlot SERIAL PRIMARY KEY,
-    nomePuntiRitiro VARCHAR(100) NOT NULL REFERENCES PuntiRitiro(nome) ON DELETE CASCADE,
+    nomePuntoRitiro VARCHAR(100) NOT NULL REFERENCES PuntiRitiro(nome) ON DELETE CASCADE,
     data DATE NOT NULL,
     oraInizio TIME NOT NULL,
     oraFine TIME NOT NULL,
     massimoPren INT NOT NULL CHECK (massimoPren > 0),
-    UNIQUE (data, oraInizio, nomePuntiRitiro)
+    UNIQUE (data, oraInizio, nomePuntoRitiro)
 );
 
 -- ==========================================
@@ -100,9 +100,9 @@ CREATE TABLE Convenzioni (
 );
 
 CREATE TABLE ConvenzioniStudenti (
-    nomeConvenzioni VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE CASCADE,
-    usernameStudenti VARCHAR(50) REFERENCES Studenti(username) ON DELETE CASCADE,
-    PRIMARY KEY (nomeConvenzioni, usernameStudenti)
+    nomeConvenzione VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE CASCADE,
+    username VARCHAR(50) REFERENCES Studenti(username) ON DELETE CASCADE,
+    PRIMARY KEY (nomeConvenzione, username)
 );
 
 CREATE TABLE Offerte (
@@ -120,9 +120,9 @@ CREATE TABLE Offerte (
 );
 
 CREATE TABLE ConvenzioniOfferte (
-    nomeConvenzioni VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE CASCADE,
+    nomeConvenzione VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE CASCADE,
     idOfferta INT REFERENCES Offerte(idOfferta) ON DELETE CASCADE,
-    PRIMARY KEY (nomeConvenzioni, idOfferta)
+    PRIMARY KEY (nomeConvenzione, idOfferta)
 );
 
 -- Associazioni aggiunte per supportare il Vincolo 3 (Condizioni delle offerte e degli studenti)
@@ -134,8 +134,8 @@ CREATE TABLE CondizioniOfferte (
 
 CREATE TABLE CondizioniStudenti (
     nomeCondizione VARCHAR(100) REFERENCES Condizioni(nome) ON DELETE CASCADE,
-    usernameStudenti VARCHAR(50) REFERENCES Studenti(username) ON DELETE CASCADE,
-    PRIMARY KEY (nomeCondizione, usernameStudenti)
+    username VARCHAR(50) REFERENCES Studenti(username) ON DELETE CASCADE,
+    PRIMARY KEY (nomeCondizione, username)
 );
 
 -- ==========================================
@@ -144,8 +144,8 @@ CREATE TABLE CondizioniStudenti (
 CREATE TABLE Ordini (
     idOrdine SERIAL PRIMARY KEY,
     idOfferta INT NOT NULL REFERENCES Offerte(idOfferta) ON DELETE RESTRICT,
-    usernamestudenti VARCHAR(50) NOT NULL REFERENCES Studenti(username) ON DELETE CASCADE,
-    idSlotslotRitiro INT REFERENCES SlotRitiro(idSlot) ON DELETE SET NULL,
+    username VARCHAR(50) NOT NULL REFERENCES Studenti(username) ON DELETE CASCADE,
+    idSlot INT REFERENCES SlotRitiro(idSlot) ON DELETE SET NULL,
     quantità INT NOT NULL CHECK (quantità > 0),
     stato stato_ordine DEFAULT 'prenotato',
     data DATE NOT NULL,
@@ -155,7 +155,7 @@ CREATE TABLE Ordini (
 
 CREATE TABLE Recensioni (
     idRecensione SERIAL PRIMARY KEY,
-    idOrdineOrdini INT NOT NULL UNIQUE REFERENCES Ordini(idOrdine) ON DELETE CASCADE,
+    idOrdine INT NOT NULL UNIQUE REFERENCES Ordini(idOrdine) ON DELETE CASCADE,
     data DATE NOT NULL,
     punteggio INT NOT NULL CHECK (punteggio >= 1 AND punteggio <= 5), -- Dominio Recensioni [1, 5]
     commento TEXT
@@ -163,7 +163,7 @@ CREATE TABLE Recensioni (
 
 CREATE TABLE Pagamenti (
     idPagamento SERIAL PRIMARY KEY,
-    idOrdineOrdini INT NOT NULL UNIQUE REFERENCES Ordini(idOrdine) ON DELETE CASCADE,
+    idOrdine INT NOT NULL UNIQUE REFERENCES Ordini(idOrdine) ON DELETE CASCADE,
     data DATE NOT NULL,
     ora TIME NOT NULL,
     dataMaxRimborso DATE,
@@ -175,14 +175,14 @@ CREATE TABLE Pagamenti (
 -- ==========================================
 CREATE TABLE RecapitoSedi (
     telefono VARCHAR(20),
-    idSedeSede INT REFERENCES Sedi(idSede) ON DELETE CASCADE,
-    PRIMARY KEY (telefono, idSedeSede)
+    idSede INT REFERENCES Sedi(idSede) ON DELETE CASCADE,
+    PRIMARY KEY (telefono, idSede)
 );
 
 CREATE TABLE RecapitoFornitori (
     telefono VARCHAR(20),
-    idFornitoreFornitore INT REFERENCES Fornitori(idFornitore) ON DELETE CASCADE,
-    PRIMARY KEY (telefono, idFornitoreFornitore)
+    idFornitore INT REFERENCES Fornitori(idFornitore) ON DELETE CASCADE,
+    PRIMARY KEY (telefono, idFornitore)
 );
 
 
