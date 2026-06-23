@@ -30,7 +30,7 @@ CREATE TABLE Fornitori (
 
 CREATE TABLE RefFornitore (
     username VARCHAR(50) PRIMARY KEY REFERENCES Utenti(username) ON DELETE CASCADE,
-    idFornitoreFornitori INT NOT NULL REFERENCES Fornitori(idFornitore) ON DELETE CASCADE
+    idFornitore INT NOT NULL REFERENCES Fornitori(idFornitore) ON DELETE CASCADE
 );
 
 CREATE TABLE Studenti (
@@ -116,7 +116,7 @@ CREATE TABLE Offerte (
     oraScad TIME,
     data DATE,
     ora TIME,
-    idConvenzioneConvenzioni VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE SET NULL
+    idConvenzione VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE SET NULL
 );
 
 CREATE TABLE ConvenzioniOfferte (
