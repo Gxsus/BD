@@ -11,7 +11,7 @@ CREATE TABLE Utenti (
     username VARCHAR(50) PRIMARY KEY,
     cognome VARCHAR(50) NOT NULL,
     nome VARCHAR(50) NOT NULL,
-    telefono VARCHAR(20),
+    telefono VARCHAR(20), 
     email VARCHAR(100) UNIQUE NOT NULL,
     dataReg DATE NOT NULL DEFAULT CURRENT_DATE
 );
@@ -19,13 +19,13 @@ CREATE TABLE Utenti (
 CREATE TABLE Fornitori (
     idFornitore SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    tipologia VARCHAR(50),
-    via VARCHAR(100),
-    civico VARCHAR(10),
-    cap VARCHAR(10),
-    data DATE,
-    orarioApertura TIME,
-    orarioChiusura TIME
+    tipologia VARCHAR(50) NOT NULL,
+    via VARCHAR(100) NOT NULL,
+    civico VARCHAR(10) NOT NULL,
+    cap VARCHAR(10) NOT NULL,
+    data DATE NOT NULL,
+    orarioApertura TIME NOT NULL,
+    orarioChiusura TIME NOT NULL
 );
 
 CREATE TABLE RefFornitore (
@@ -35,7 +35,7 @@ CREATE TABLE RefFornitore (
 
 CREATE TABLE Studenti (
     username VARCHAR(50) PRIMARY KEY REFERENCES Utenti(username) ON DELETE CASCADE,
-    isSuspended BOOLEAN DEFAULT false
+    isSuspended BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE Collaboratori (
@@ -60,21 +60,21 @@ CREATE TABLE Condizioni (
 CREATE TABLE Sedi (
     idSede SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    comune VARCHAR(100),
-    via VARCHAR(100),
-    civico VARCHAR(10),
-    cap VARCHAR(10),
-    coordinate VARCHAR(100),
-    rifAmmin VARCHAR(50) REFERENCES Amministratori(username) ON DELETE SET NULL
+    comune VARCHAR(100) NOT NULL,
+    via VARCHAR(100) NOT NULL,
+    civico VARCHAR(10) NOT NULL,
+    cap VARCHAR(10) NOT NULL,
+    coordinate VARCHAR(100) NOT NULL,
+    rifAmmin VARCHAR(50) REFERENCES Amministratori(username) ON DELETE SET NULL -
 );
 
 CREATE TABLE PuntiRitiro (
     nome VARCHAR(100) PRIMARY KEY,
-    area VARCHAR(100),
-    edificio VARCHAR(100),
-    piano VARCHAR(50),
-    aula VARCHAR(50),
-    note TEXT,
+    area VARCHAR(100) NOT NULL,
+    edificio VARCHAR(100) NOT NULL,
+    piano VARCHAR(50) NOT NULL,
+    aula VARCHAR(50) NOT NULL,
+    note TEXT NOT NULL,
     idSede INT NOT NULL REFERENCES Sedi(idSede) ON DELETE CASCADE
 );
 
@@ -85,47 +85,43 @@ CREATE TABLE SlotRitiro (
     oraInizio TIME NOT NULL,
     oraFine TIME NOT NULL,
     massimoPren INT NOT NULL CHECK (massimoPren > 0),
-    UNIQUE (data, oraInizio, nomePuntoRitiro)
+    UNIQUE (data, oraInizio, nomePuntoRitiro),
+    CHECK (oraInizio < oraFine) -- constraint base per lo slot
 );
 
 -- ==========================================
 -- CONVENZIONI E OFFERTE
 -- ==========================================
 CREATE TABLE Convenzioni (
-    nome VARCHAR(100) PRIMARY KEY,
-    stato stato_convenzione DEFAULT 'attiva',
-    idSede INT REFERENCES Sedi(idSede) ON DELETE CASCADE,
-    idFornitore INT REFERENCES Fornitori(idFornitore) ON DELETE CASCADE,
-    tipoOfferta VARCHAR(50) REFERENCES TipiOfferta(nome) ON DELETE SET NULL
-);
-
-CREATE TABLE ConvenzioniStudenti (
-    nomeConvenzione VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE CASCADE,
-    username VARCHAR(50) REFERENCES Studenti(username) ON DELETE CASCADE,
-    PRIMARY KEY (nomeConvenzione, username)
+    idConv SERIAL PRIMARY KEY,
+    sogliaMinPubbl NUMERIC(10, 2), 
+    commissione NUMERIC(10, 2) NOT NULL,
+    stato stato_convenzione NOT NULL DEFAULT 'attiva',
+    fineValid DATE NOT NULL,
+    inizioValid DATE NOT NULL,
+    modRitiro VARCHAR(100) NOT NULL,
+    scontoMin NUMERIC(5, 2) NOT NULL,
+    sogliaMaxPubbl NUMERIC(10, 2) NOT NULL,
+    nomeTipoOfferta VARCHAR(50) NOT NULL REFERENCES TipiOfferta(nome) ON DELETE RESTRICT,
+    idSede INT NOT NULL REFERENCES Sedi(idSede) ON DELETE CASCADE,
+    idFornitore INT NOT NULL REFERENCES Fornitori(idFornitore) ON DELETE CASCADE,
+    CHECK (inizioValid <= fineValid)
 );
 
 CREATE TABLE Offerte (
     idOfferta SERIAL PRIMARY KEY,
     titolo VARCHAR(100) NOT NULL,
-    descrizione TEXT,
+    descrizione TEXT NOT NULL,
     prezzoOrig NUMERIC(10, 2) NOT NULL,
     prezzo NUMERIC(10, 2) NOT NULL,
-    quantità INT NOT NULL CHECK (quantità >= 0),
-    dataScad DATE,
-    oraScad TIME,
-    data DATE,
-    ora TIME,
-    idConvenzione VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE SET NULL
+    quantita INT NOT NULL CHECK (quantita >= 0),
+    dataScad DATE NOT NULL,
+    oraScad TIME NOT NULL,
+    data DATE NOT NULL,
+    ora TIME NOT NULL,
+    idConv INT NOT NULL REFERENCES Convenzioni(idConv) ON DELETE CASCADE
 );
 
-CREATE TABLE ConvenzioniOfferte (
-    nomeConvenzione VARCHAR(100) REFERENCES Convenzioni(nome) ON DELETE CASCADE,
-    idOfferta INT REFERENCES Offerte(idOfferta) ON DELETE CASCADE,
-    PRIMARY KEY (nomeConvenzione, idOfferta)
-);
-
--- Associazioni aggiunte per supportare il Vincolo 3 (Condizioni delle offerte e degli studenti)
 CREATE TABLE CondizioniOfferte (
     nomeCondizione VARCHAR(100) REFERENCES Condizioni(nome) ON DELETE CASCADE,
     idOfferta INT REFERENCES Offerte(idOfferta) ON DELETE CASCADE,
@@ -145,12 +141,12 @@ CREATE TABLE Ordini (
     idOrdine SERIAL PRIMARY KEY,
     idOfferta INT NOT NULL REFERENCES Offerte(idOfferta) ON DELETE RESTRICT,
     username VARCHAR(50) NOT NULL REFERENCES Studenti(username) ON DELETE CASCADE,
-    idSlot INT REFERENCES SlotRitiro(idSlot) ON DELETE SET NULL,
-    quantità INT NOT NULL CHECK (quantità > 0),
-    stato stato_ordine DEFAULT 'prenotato',
+    idSlot INT NOT NULL REFERENCES SlotRitiro(idSlot) ON DELETE RESTRICT,
+    quantita INT NOT NULL CHECK (quantita > 0),
+    stato stato_ordine NOT NULL DEFAULT 'prenotato',
     data DATE NOT NULL,
     ora TIME NOT NULL,
-    prezzo NUMERIC(10, 2) NOT NULL -- Da valorizzare con il prezzo dell'offerta al momento dell'ordine (Vincolo 11)
+    prezzo NUMERIC(10, 2) NOT NULL -- Da valorizzare con il prezzo dell'offerta (Vincolo 11)
 );
 
 CREATE TABLE Recensioni (
@@ -158,7 +154,7 @@ CREATE TABLE Recensioni (
     idOrdine INT NOT NULL UNIQUE REFERENCES Ordini(idOrdine) ON DELETE CASCADE,
     data DATE NOT NULL,
     punteggio INT NOT NULL CHECK (punteggio >= 1 AND punteggio <= 5), -- Dominio Recensioni [1, 5]
-    commento TEXT
+    commento TEXT NOT NULL
 );
 
 CREATE TABLE Pagamenti (
@@ -166,8 +162,8 @@ CREATE TABLE Pagamenti (
     idOrdine INT NOT NULL UNIQUE REFERENCES Ordini(idOrdine) ON DELETE CASCADE,
     data DATE NOT NULL,
     ora TIME NOT NULL,
-    dataMaxRimborso DATE,
-    metPagamento VARCHAR(50)
+    dataMaxRimborso DATE NOT NULL,
+    metPagamento VARCHAR(50) NOT NULL
 );
 
 -- ==========================================
@@ -184,5 +180,4 @@ CREATE TABLE RecapitoFornitori (
     idFornitore INT REFERENCES Fornitori(idFornitore) ON DELETE CASCADE,
     PRIMARY KEY (telefono, idFornitore)
 );
-
 

@@ -1,0 +1,86 @@
+”stato dell’ordine (prenotato, pagato, ritirato, annullato, no-show, rimborsato)”.
+Uno studente può pagare con carta al momento della prenotazione, e avremmo lo stato “pagato” in ordine, oppure pagare in contanti al ritiro, con  stato “prenotato”.
+In seguito un ordine può essere ritirato solo se ha come stato “pagato”; in caso contrario, vuol dire che deve pagare in contanti prima del ritiro, passando direttamente allo stato “ritirato”.
+Ogni volta che un ordine viene pagato si crea una riga nell’entità Pagamenti riferita a tale ordine.
+L’ordine può avere lo stato "no-show" sia se è stato pagato oppure no (si può capire se è avvenuto il pagamento se esiste la riga nell’entità Pagamenti).
+
+“La piattaforma prevede meccanismi di penalizzazione per utenti con ripetuti no-show (es. sospensione temporanea dell’account)”.
+Non spiega molto a riguardo. Nel nostro schema si possono contare gli ordini con stato no-show relativi ad uno studente e nel caso questi superino una determinata soglia, si sospende l’utente per un periodo fissato.
+Ogni volta che un utente con il flag isSuspended prova ad accedere, si calcola il tempo passato dalla sospensione cercando l’ultimo ordine no-show dell’utente,
+se è passato il tempo necessario si toglie la sospensione all’utente.
+
+Spiegazioni di entità e relazioni non ovvie:
+Una recensione è collegata allo studente creatore tramite l’ordine;
+L’entità pagamenti non ha il prezzo pagato perché lo si deduce dall’ordine a cui è associato; inoltre, lo stato non serve perché se esiste la tupla in Pagamenti implica che il pagamento è stato effettuato, e in caso di rimborso, l’ordine associato avrà stato “rimborsato”;
+In caso di rimborso di un ordine la riga in pagamento rimane, ma sarà associata a tale ordine con stato “rimborsato”.
+
+
+Numero vincolo
+Entità e/o associazioni coinvolte
+Vincolo in linguaggio naturale
+1
+fornitori
+puntiRitiro
+sedi
+convenzioni
+Un fornitore può possedere un punto di ritiro solo se quest’ultimo appartiene ad una sede che ha una convenzione attiva con il fornitore
+
+
+2
+offerta
+puntiRitiro
+sedi
+convenzioni
+tipiOfferta
+Un offerta può avere un punto di ritiro solo se quest’ultimo appartiene ad una sede che ha una convenzione attiva con il tipo di tale offerta
+3
+studenti
+offerte
+condizioni
+ordini
+Uno studente può ordinare un'offerta solo se soddisfa le condizioni di quest’ultima (se un'offerta è collegata ad una condizione allora anche lo studente deve essere collegato a tale condizione per poter effettuare l’ordine)
+5
+ordini
+offerte
+Un ordine non può essere effettuato su un offerta scaduta, esaurita o annullata
+6
+recenzioni
+oridini
+Una recensione può appartenere ad un ordine solo se ha come stato ritirato
+7
+offerte
+convenzioni
+fornitori
+sedi
+tipiOfferta
+Un’offerta può essere creata solo se esiste una convenzione attiva tra il suo fornitore, la sede e il suo tipo
+8
+ordini
+pagamenti
+Un ordine può essere ritirato solo se è stato pagato (deve esistere una tupla in pagamenti associata a tale ordine)
+9
+slotRitiro
+ordini
+In un slot di ritiro, il numero di prenotazioni attuali si può trovare cercando tutti gli ordini prenotati in tale slot
+10
+slotRitiro
+In uno slot di ritiro non si può superare il massimo delle prenotazioni
+
+
+11
+ordini
+offerte
+il prezzo è presente oltre che in offerte anche in ordini (nonostante un ordine ha solo un offerta) perchè in caso di cambio di prezzo dell'offerta gli ordini vecchi non devono cambiare il prezzo
+12
+slotRitiro
+In una stessa data l'ora di inizio di uno slot deve essere successiva all’ora di fine dello slot precedente  (in altre parole due slot non possono essere sovrapposti); in questo modo ha senso definire la capacità massima di uno slot.
+13
+Ordini
+quantità maggiore di 0
+14
+SlotRitiro
+masimoPren maggiore di 0
+15
+Offerte
+quantità maggiore di 0
+
