@@ -1,3 +1,6 @@
+TOO GOOD TO UNI
+APP SIMILE A TOO GOOD TO GO MA ALL'UNIVERSITA
+
 ”stato dell’ordine (prenotato, pagato, ritirato, annullato, no-show, rimborsato)”.
 Uno studente può pagare con carta al momento della prenotazione, e avremmo lo stato “pagato” in ordine, oppure pagare in contanti al ritiro, con  stato “prenotato”.
 In seguito un ordine può essere ritirato solo se ha come stato “pagato”; in caso contrario, vuol dire che deve pagare in contanti prima del ritiro, passando direttamente allo stato “ritirato”.
