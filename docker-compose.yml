@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db_project
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./schema_corretto.sql:/docker-entrypoint-initdb.d/init.sql:ro,z
+    restart: no

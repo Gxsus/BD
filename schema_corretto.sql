@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS  Sedi (
     civico VARCHAR(10) NOT NULL,
     cap VARCHAR(10) NOT NULL,
     coordinate VARCHAR(100) NOT NULL,
-    rifAmmin VARCHAR(50) REFERENCES Amministratori(username) ON DELETE SET NULL 
+    rifAmmin VARCHAR(50) REFERENCES Amministratori(username) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS  PuntiRitiro (

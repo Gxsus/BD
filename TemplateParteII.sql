@@ -232,7 +232,7 @@ INSERT INTO Amministratori (username) VALUES
 -- Fornitori
 INSERT INTO Fornitori (idFornitore, nome, tipologia, via, civico, cap, data, orarioApertura, orarioChiusura) VALUES
 (1, 'Pizzeria Bella Napoli', 'Ristorazione', 'Via Roma', '10', '00100', CURRENT_DATE, '10:00', '22:00'),
-(2, 'Libreria Universitaria', 'Libreria', 'Via Verdi', '20', '00100', CURRENT_DATE, '09:00', '19:00');
+(2, 'Panetteria Il Forno', 'Panetteria', 'Via Garibaldi', '20', '00100', CURRENT_DATE, '07:00', '19:00');
 
 -- Tipi Offerta
 INSERT INTO TipiOfferta (nome) VALUES ('Sconto Fissi'), ('Menu Speciale');
@@ -256,7 +256,8 @@ INSERT INTO SlotRitiro (idSlot, nomePuntoRitiro, data, oraInizio, oraFine, massi
 -- Convenzioni
 INSERT INTO Convenzioni (idConv, sogliaMinPubbl, commissione, stato, inizioValid, fineValid, modRitiro, scontoMin, sogliaMaxPubbl, nomeTipoOfferta, idSede, idFornitore) VALUES 
 (1, NULL, 5.00, 'attiva', '2025-01-01', '2026-12-31', 'Ritiro in sede', 10.00, 100.00, 'Menu Speciale', 1, 1),
-(2, 50.00, 3.00, 'attiva', '2025-01-01', '2026-12-31', 'Spedizione interna', 15.00, 200.00, 'Sconto Fissi', 2, 2);
+(2, 50.00, 3.00, 'attiva', '2025-01-01', '2026-12-31', 'Spedizione interna', 15.00, 200.00, 'Sconto Fissi', 2, 2),
+(3, NULL, 4.00, 'attiva', '2025-01-01', '2026-12-31', 'Ritiro in sede', 10.00, 150.00, 'Sconto Fissi', 1, 2);
 
 -- Condizioni
 INSERT INTO Condizioni (nome) VALUES
@@ -272,14 +273,16 @@ INSERT INTO CondizioniStudenti (nomeCondizione, username) VALUES
 -- Offerte
 INSERT INTO Offerte (idOfferta, titolo, descrizione, prezzoOrig, prezzo, quantita, dataScad, oraScad, data, ora, idConv) VALUES
 (1, 'Pizza Margherita', 'Ottima pizza margherita', 8.00, 5.00, 100, CURRENT_DATE + 30, '23:59', CURRENT_DATE, '10:00', 1),
-(2, 'Testo Analisi 1', 'Libro per analisi', 40.00, 30.00, 50, CURRENT_DATE + 30, '23:59', CURRENT_DATE, '10:00', 2),
-(3, 'Menu Studenti', 'Pizza + bibita', 10.00, 6.00, 20, CURRENT_DATE + 30, '23:59', CURRENT_DATE, '10:00', 1);
+(2, 'Magic Box Colazione', 'Brioche e paste invendute', 15.00, 4.99, 50, CURRENT_DATE + 30, '23:59', CURRENT_DATE, '10:00', 2),
+(3, 'Menu Studenti', 'Pizza + bibita', 10.00, 6.00, 20, CURRENT_DATE + 30, '23:59', CURRENT_DATE, '10:00', 1),
+(4, 'Magic Box Salato', 'Pizzette e focacce a fine turno', 12.00, 3.99, 100, CURRENT_DATE + 30, '23:59', CURRENT_DATE, '10:00', 2);
 
 -- Ordini
 INSERT INTO Ordini (idOrdine, idOfferta, username, quantita, data, ora, prezzo, stato, idSlot) VALUES
 (1, 1, 'mario.rossi', 2, CURRENT_DATE, '09:00', 5.00, 'ritirato', 1),
-(2, 2, 'luigi.verdi', 1, CURRENT_DATE, '09:30', 30.00, 'pagato', 1),
-(3, 3, 'giulia.bianchi', 1, CURRENT_DATE, '10:00', 6.00, 'prenotato', 2);
+(2, 2, 'luigi.verdi', 1, CURRENT_DATE, '09:30', 4.99, 'pagato', 1),
+(3, 3, 'giulia.bianchi', 1, CURRENT_DATE, '10:00', 6.00, 'prenotato', 2),
+(4, 2, 'mario.rossi', 1, CURRENT_DATE, '11:00', 4.99, 'prenotato', 3);
 
 -- Pagamenti
 INSERT INTO Pagamenti (idPagamento, idOrdine, data, ora, dataMaxRimborso, metPagamento) VALUES
@@ -325,7 +328,8 @@ FROM Fornitori f
 JOIN Convenzioni c ON f.idFornitore = c.idFornitore
 JOIN Offerte o ON c.idConv = o.idConv
 JOIN Ordini ord ON o.idOfferta = ord.idOfferta
-GROUP BY f.nome, o.titolo;
+GROUP BY f.nome, o.titolo
+ORDER BY f.nome, o.titolo;
 
 
 /*******************************************************************************
@@ -341,49 +345,47 @@ GROUP BY f.nome, o.titolo;
 **********/
 /* 3a (interrogazione con operazione insiemistica)
 */
-/* Trovare gli username degli studenti che possiedono una specifica condizione  
-(es. 'Iscritto Ingegneria') TRANNE (EXCEPT) quelli che hanno effettivamente effettuato un ordine 
-per un'offerta che richiede o fa parte di una convenzione. 
-Coinvolge le tabelle: CondizioniStudenti, Ordini, Offerte, Convenzioni.
+/* Trovare le offerte attive (scadenza futura) TRANNE (EXCEPT) quelle 
+che hanno gia' ricevuto almeno un ordine. 
+Utile per i fornitori per capire quali offerte non stanno funzionando 
+e sono ancora invendute.
+Coinvolge le tabelle: Offerte, Ordini.
 */
 /*******************************************************************************
 ********************************************************************************
 **********/
 
-SELECT cs.username
-FROM CondizioniStudenti cs
-WHERE cs.nomeCondizione = 'Iscritto Ingegneria'
+SELECT o.titolo
+FROM Offerte o
+WHERE o.dataScad >= CURRENT_DATE
 EXCEPT
-SELECT o.username
-FROM Ordini o
-JOIN Offerte off ON o.idOfferta = off.idOfferta
-JOIN Convenzioni c ON off.idConv = c.idConv
-WHERE c.nomeTipoOfferta = 'Sconto Fissi';
+SELECT off.titolo
+FROM Ordini ord
+JOIN Offerte off ON ord.idOfferta = off.idOfferta;
 
 /*******************************************************************************
 ********************************************************************************
 **********/
 /* 3b (interrogazione di divisione)
 */
-/* Trovare gli studenti che hanno ordinato TUTTE le offerte disponibili per una 
-specifica convenzione (nell'esempio idConv = 2). Utilizza la divisione con doppio 
-NOT EXISTS e coinvolge le tabelle Studenti, Offerte e Ordini.
+/* Trovare i fornitori che hanno stipulato almeno una convenzione per TUTTE 
+le sedi universitarie presenti a sistema (I locali "Onnipresenti").
+Utilizza la divisione con doppio NOT EXISTS e coinvolge Fornitori, Sedi e Convenzioni.
 */
 /*******************************************************************************
 ********************************************************************************
 **********/
 
-SELECT s.username
-FROM Studenti s
+SELECT f.nome
+FROM Fornitori f
 WHERE NOT EXISTS (
     SELECT 1 
-    FROM Offerte o
-    WHERE o.idConv = 2
-    AND NOT EXISTS (
-        SELECT 1
-        FROM Ordini ord
-        WHERE ord.username = s.username
-        AND ord.idOfferta = o.idOfferta
+    FROM Sedi s
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM Convenzioni c
+        WHERE c.idFornitore = f.idFornitore 
+        AND c.idSede = s.idSede
     )
 );
 
@@ -396,6 +398,7 @@ WHERE NOT EXISTS (
 /* Trovare per ogni punto di ritiro lo slot che ha registrato il massimo numero 
 totale di quantità prenotata. La correlazione è necessaria per comparare la somma delle quantità 
 di ciascuno slot con il massimo tra tutti gli slot DELLO STESSO punto di ritiro.
+Se il punto di ritiro non ha ordini, non viene mostrato alcun risultato per quel punto di ritiro.
 */
 /*******************************************************************************
 ********************************************************************************
@@ -412,7 +415,7 @@ HAVING SUM(o.quantita) = (
         SELECT sr2.idSlot, SUM(o2.quantita) AS totale_slot
         FROM SlotRitiro sr2
         JOIN Ordini o2 ON sr2.idSlot = o2.idSlot
-        WHERE sr2.nomePuntoRitiro = pr.nome -- Correlazione essenziale
+        WHERE sr2.nomePuntoRitiro = pr.nome 
         GROUP BY sr2.idSlot
     ) AS sub
 );
