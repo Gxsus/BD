@@ -476,7 +476,7 @@ BEGIN
              RAISE EXCEPTION 'Slot di ritiro non trovato';
         END IF;
         
-        SELECT COALESCE(SUM(quantita), 0) INTO v_pren_attuali
+        SELECT COALESCE(SUM(quantita), 0) INTO v_pren_attuali -- COALESCE RESTITUISCE IL PRIMO VALORE NON NULLO
         FROM Ordini WHERE idSlot = p_idSlot AND stato IN ('prenotato', 'pagato');
         
         IF v_pren_attuali + p_quantita > v_max_pren THEN
@@ -507,10 +507,14 @@ SELECT inserisci_ordine('mario.rossi', 1, 1, 1);
 /* Calcola il ricavo totale mensile per un dato fornitore in un dato mese e anno.
 Questa funzione unisce Fornitori, Convenzioni, Offerte, Ordini e Pagamenti per sommare
 l'importo totale degli ordini ('pagato' o 'ritirato') nel periodo specificato.
+
+NOTA: questa query aggiunge il prezzo se esiste una tupla in pagamento associata
+a quell'ordine!
 */
 /*******************************************************************************
 ********************************************************************************
 **********/
+
 
 CREATE OR REPLACE FUNCTION calcola_ricavo_fornitore_mese(
     p_idFornitore INT,
