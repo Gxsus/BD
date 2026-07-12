@@ -214,7 +214,7 @@ CREATE TABLE RecapitoFornitori_CL (
 EXPLAIN ANALYZE
 SELECT idOfferta, titolo, prezzo, quantita
 FROM Offerte_CL
-WHERE quantita > 0;
+WHERE quantita > 4;
 
 
 
@@ -245,7 +245,7 @@ EXPLAIN ANALYZE
 SELECT u.nome, u.cognome
 FROM Utenti_CL u
 JOIN Studenti_CL s ON s.username = u.username
-WHERE s.isSuspended = TRUE AND u.nome = 'Francesco';
+WHERE s.isSuspended = TRUE AND u.nome = 'Francesco' AND u.cognome = 'Tacchinp';
 
 
 

@@ -70,7 +70,7 @@ SELECT
     (i % 100) + 1, 
     (i % 3) + 1, 
     (CASE WHEN (i % 2 = 0) THEN 'prenotato' ELSE 'pagato' END)::stato_ordine,
-    CURRENT_DATE - (i % 30), 
+    CURRENT_DATE - i, 
     '12:00:00', 
     10.00 + (i % 5),
     'dummy_string'
