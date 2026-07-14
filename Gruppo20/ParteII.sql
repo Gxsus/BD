@@ -349,19 +349,25 @@ ORDER BY f.nome, o.titolo;
 che hanno gia' ricevuto almeno un ordine. 
 Utile per i fornitori per capire quali offerte non stanno funzionando 
 e sono ancora invendute.
-Coinvolge le tabelle: Offerte, Ordini.
+(seleziona anche i fornitori per completezza)
+*/
+Coinvolge le tabelle: Offerte, Ordini, Fornitori.
 */
 /*******************************************************************************
 ********************************************************************************
 **********/
 
-SELECT o.titolo
+SELECT o.titolo, f.nome AS fornitore
 FROM Offerte o
+JOIN Convenzioni c ON o.idConv = c.idConv
+JOIN Fornitori f ON c.idFornitore = f.idFornitore
 WHERE o.dataScad >= CURRENT_DATE
 EXCEPT
-SELECT off.titolo
+SELECT off.titolo, f2.nome AS fornitore
 FROM Ordini ord
-JOIN Offerte off ON ord.idOfferta = off.idOfferta;
+JOIN Offerte off ON ord.idOfferta = off.idOfferta
+JOIN Convenzioni c2 ON off.idConv = c2.idConv
+JOIN Fornitori f2 ON c2.idFornitore = f2.idFornitore;
 
 /*******************************************************************************
 ********************************************************************************
