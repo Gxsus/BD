@@ -245,7 +245,7 @@ EXPLAIN ANALYZE
 SELECT u.nome, u.cognome
 FROM Utenti_CL u
 JOIN Studenti_CL s ON s.username = u.username
-WHERE s.isSuspended = TRUE AND u.nome = 'Francesco' AND u.cognome = 'Tacchinp';
+WHERE s.isSuspended = TRUE AND u.nome = 'Nome1' AND u.cognome = 'Cognome1';
 
 
 
@@ -260,7 +260,7 @@ WHERE s.isSuspended = TRUE AND u.nome = 'Francesco' AND u.cognome = 'Tacchinp';
 
 DROP INDEX IF EXISTS idxQuantOff;
 DROP INDEX IF EXISTS idxDatOrd;
-DROP INDEX IF EXISTS idxUsrnUt;
+DROP INDEX IF EXISTS idxUsrnSt;
 
 
 /* inserire qui i comandi SQL per la creazione dello schema fisico della base di dati in accordo al risultato della fase di progettazione fisica per il carico di lavoro. */
@@ -268,7 +268,7 @@ DROP INDEX IF EXISTS idxUsrnUt;
 CREATE INDEX idxQuantOff ON Offerte_CL (quantita);
 CREATE INDEX idxDatOrd ON Ordini_CL (data);
 CLUSTER Ordini_CL USING idxDatOrd;
-CREATE INDEX idxUsrnUt ON Utenti_CL USING HASH (username);
+CREATE INDEX idxUsrnSt ON Studenti_CL USING HASH (username);
 
 
 
@@ -298,7 +298,7 @@ Motivazioni dei privilegi:
   (Fornitori, Sedi, PuntiRitiro, Offerte, SlotRitiro, ecc.) per esplorare le offerte. 
   Necessita di permessi di scrittura (INSERT) per effettuare Ordini, Pagamenti e 
   inserire Recensioni. Inoltre, necessita di UPDATE sui propri dati e per poter
-  annullare ordini.
+  modificare lo stato dei propri ordini.
 - Referente Fornitore: Deve poter pubblicare e gestire offerte e slot per i
   propri fornitori. Di conseguenza, necessita di INSERT, UPDATE, DELETE sulle 
   tabelle Offerte_CL, SlotRitiro_CL e CondizioniOfferte_CL. Necessita anche di 
